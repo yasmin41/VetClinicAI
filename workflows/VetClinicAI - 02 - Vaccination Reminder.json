@@ -6,10 +6,10 @@
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
       "position": [
-        -224,
-        -64
+        0,
+        48
       ],
-      "id": "2108462b-f482-476d-a406-e744c23ac9e6",
+      "id": "d7072457-c7bb-4ba4-9482-97e788d6b110",
       "name": "When clicking ‘Execute workflow’"
     },
     {
@@ -21,10 +21,10 @@
       "type": "n8n-nodes-base.microsoftSql",
       "typeVersion": 1.2,
       "position": [
-        0,
-        -64
+        224,
+        48
       ],
-      "id": "4e070338-9654-4587-bc14-12d2412606c4",
+      "id": "5ed51805-d678-485a-be27-48e65db30efa",
       "name": "Microsoft SQL"
     },
     {
@@ -63,10 +63,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.4,
       "position": [
-        224,
-        -64
+        448,
+        48
       ],
-      "id": "02acc329-927d-40ce-bd2a-54d75bbe27c5",
+      "id": "5d8c3d37-f82d-41f0-bcbc-296b519284ff",
       "name": "If"
     },
     {
@@ -111,14 +111,28 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.5,
       "position": [
-        528,
-        -112
+        752,
+        0
       ],
-      "id": "943e6b57-b884-4b47-b6e6-daa497c714bd",
+      "id": "16530d23-90df-4b13-a4d7-c73392cccf35",
       "name": "Prepare Vaccination Reminder"
+    },
+    {
+      "parameters": {
+        "authentication": "webhook",
+        "content": "={{ $json.reminderMessage }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [
+        976,
+        0
+      ],
+      "id": "989dd3e2-092a-4d46-b4eb-881d3e7d2c90",
+      "name": "Discord"
     }
   ],
-  "pinData": {},
   "connections": {
     "When clicking ‘Execute workflow’": {
       "main": [
@@ -152,6 +166,22 @@
           }
         ]
       ]
+    },
+    "Prepare Vaccination Reminder": {
+      "main": [
+        [
+          {
+            "node": "Discord",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Discord": {
+      "main": [
+        []
+      ]
     }
   },
   "active": false,
@@ -159,6 +189,5 @@
     "executionOrder": "v1",
     "binaryMode": "separate"
   },
-  "nodeGroups": [],
   "tags": []
 }
