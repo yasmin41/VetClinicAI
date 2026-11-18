@@ -1,0 +1,23 @@
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# IDE settings
+.idea/
+.vscode/
+
+# Python
+__pycache__/
+*.pyc
+
+# Local database files and backups
+*.mdf
+*.ldf
+*.bak
+
+# Logs
+*.log
+
+# Temporary test scripts
+*-test.sql
