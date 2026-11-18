@@ -4,8 +4,8 @@ This directory contains the SQL Server scripts for VetClinicAI.
 
 ## Execution Order
 
-1. Run `01-create-schema.sql` to create the database, tables, relationships, and constraints.
-2. Run `02-seed-data.sql` to insert sample records.
+1. Run `create-schema.sql` to create the database, tables, relationships, and constraints.
+2. Run `seed-data.sql` to insert sample records.
 
 ## Requirements
 
