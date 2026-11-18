@@ -1,0 +1,164 @@
+{
+  "name": "VetClinicAI - 02 - Vaccination Reminder",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -224,
+        -64
+      ],
+      "id": "2108462b-f482-476d-a406-e744c23ac9e6",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "\nSELECT\n    v.VaccinationId,\n    c.CustomerId,\n    c.FullName AS CustomerName,\n    p.PetId,\n    p.PetName,\n    v.VaccineName,\n    v.NextDueDate,\n    DATEDIFF(\n        DAY,\n        CAST(GETDATE() AS DATE),\n        v.NextDueDate\n    ) AS DaysUntilDue\nFROM dbo.Vaccinations AS v\nINNER JOIN dbo.Pets AS p\n    ON v.PetId = p.PetId\nINNER JOIN dbo.Customers AS c\n    ON p.CustomerId = c.CustomerId\nORDER BY v.NextDueDate;\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.microsoftSql",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        -64
+      ],
+      "id": "4e070338-9654-4587-bc14-12d2412606c4",
+      "name": "Microsoft SQL"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 4
+          },
+          "conditions": [
+            {
+              "id": "2bfbe927-7120-41b6-a53a-b705300c903d",
+              "leftValue": "={{ $json.DaysUntilDue }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            },
+            {
+              "id": "dcad1892-7d38-4adb-8e38-5f205afacd3f",
+              "leftValue": "={{ $json.DaysUntilDue }}",
+              "rightValue": 7,
+              "operator": {
+                "type": "number",
+                "operation": "lte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        224,
+        -64
+      ],
+      "id": "02acc329-927d-40ce-bd2a-54d75bbe27c5",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "98a87366-c2a3-40ae-a4cf-7b4a5db19c84",
+              "name": "CustomerName",
+              "value": "={{ $json.CustomerName }}",
+              "type": "string"
+            },
+            {
+              "id": "f2bc717e-e4b1-4b49-8807-3574ba9921c5",
+              "name": "PetName",
+              "value": "={{ $json.PetName }}",
+              "type": "string"
+            },
+            {
+              "id": "cb0546be-5815-49ab-bbbf-065edd9a8fe0",
+              "name": "VaccineName",
+              "value": "={{ $json.VaccineName }}",
+              "type": "string"
+            },
+            {
+              "id": "0b9f3581-f8b4-4869-a51a-128d00638724",
+              "name": "DaysUntilDue",
+              "value": "={{ $json.DaysUntilDue }}",
+              "type": "string"
+            },
+            {
+              "id": "d45ad1b4-ada4-4c87-affa-5bfd53018616",
+              "name": "reminderMessage",
+              "value": "={{ `Hello ${$json.CustomerName}, this is a reminder from VetClinicAI. ${$json.PetName} has an upcoming ${$json.VaccineName} vaccination in ${$json.DaysUntilDue} day(s). Please contact the clinic to confirm the appointment.` }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": "={{ false }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        528,
+        -112
+      ],
+      "id": "943e6b57-b884-4b47-b6e6-daa497c714bd",
+      "name": "Prepare Vaccination Reminder"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Microsoft SQL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Microsoft SQL": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Prepare Vaccination Reminder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "nodeGroups": [],
+  "tags": []
+}

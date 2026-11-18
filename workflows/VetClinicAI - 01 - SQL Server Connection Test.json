@@ -1,0 +1,160 @@
+{
+  "name": "VetClinicAI - 01 - SQL Server Connection Test",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "8801fe51-7096-4892-b5f0-ea9a3e5912b8",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "\nSELECT\n    c.CustomerId,\n    c.FullName AS CustomerName,\n    p.PetId,\n    p.PetName,\n    p.Species\nFROM dbo.Customers AS c\nINNER JOIN dbo.Pets AS p\n    ON c.CustomerId = p.CustomerId\nORDER BY c.CustomerId, p.PetId;\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.microsoftSql",
+      "typeVersion": 1.2,
+      "position": [
+        224,
+        0
+      ],
+      "id": "56194777-5d0c-4fb7-9aab-166d4cf54620",
+      "name": "Microsoft SQL"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f80dbd3d-0775-461a-bd2c-b754ac140ba5",
+              "name": "CustomerId",
+              "value": "={{ $json.CustomerId }}",
+              "type": "number"
+            },
+            {
+              "id": "75012c4c-3a4b-46d8-9443-cde7a43b64ff",
+              "name": "CustomerName",
+              "value": "={{ $json.CustomerName }}",
+              "type": "string"
+            },
+            {
+              "id": "3c7b1093-c992-445d-b71d-8d7bc34a1164",
+              "name": "PetId",
+              "value": "={{ $json.PetId }}",
+              "type": "number"
+            },
+            {
+              "id": "4ef5c01a-908a-4a19-b171-6fdb6a958fee",
+              "name": "PetName",
+              "value": "={{ $json.PetName }}",
+              "type": "string"
+            },
+            {
+              "id": "a5068e36-ca7a-4065-9467-47b46b352f44",
+              "name": "Species",
+              "value": "={{ $json.Species }}",
+              "type": "string"
+            },
+            {
+              "id": "70f328c5-7a38-425d-b6d0-ac26ea36d8c4",
+              "name": "displayName",
+              "value": "={{ $json.PetName + ' - ' + $json.Species }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        448,
+        0
+      ],
+      "id": "1590105b-064e-4554-9731-899b212ada1d",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 4
+          },
+          "conditions": [
+            {
+              "id": "f8a2c4e0-9726-460f-ab82-eb5967ef9877",
+              "leftValue": "={{ $json.Species }}",
+              "rightValue": "Cat",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        672,
+        0
+      ],
+      "id": "ddd48cf1-a6b2-4da4-b44c-5ab061524800",
+      "name": "If"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Microsoft SQL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Microsoft SQL": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "nodeGroups": [],
+  "tags": []
+}
