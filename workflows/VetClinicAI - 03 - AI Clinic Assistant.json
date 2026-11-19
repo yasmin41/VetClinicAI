@@ -1,0 +1,186 @@
+{
+  "name": "VetClinicAI - 03 - AI Clinic Assistant",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.5,
+      "position": [
+        -48,
+        48
+      ],
+      "id": "9df4ad76-6b0a-460b-bc6a-0f80b322a793",
+      "name": "When chat message received",
+      "webhookId": "0515c61e-590f-474f-a968-3b354b2377ef"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{\n  $json.body?.chatInput ?? $json.chatInput\n}}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        224,
+        16
+      ],
+      "id": "4ee14fe6-d89f-4503-b07e-ff33a2d437e6",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.2,
+      "position": [
+        224,
+        160
+      ],
+      "id": "604223f0-1f44-4897-93e2-3bd22a4013ca",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "P2ksfecz5eHDgb6Z",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Get, add and update data in Microsoft SQLReturns upcoming pet vaccinations due within the next 7 days from the VetClinicAI SQL Server database. Use this tool when the user asks about upcoming vaccinations, vaccine due dates, or pets needing vaccination soon. This tool only reads data and does not modify the database.\n Copy",
+        "operation": "executeQuery",
+        "query": "\nSELECT\n    p.PetName,\n    p.Species,\n    v.VaccineName,\n    CONVERT(VARCHAR(10), v.NextDueDate, 23) AS NextDueDate,\n    DATEDIFF(\n        DAY,\n        CAST(GETDATE() AS DATE),\n        CAST(v.NextDueDate AS DATE)\n    ) AS DaysUntilDue\nFROM dbo.Vaccinations AS v\nINNER JOIN dbo.Pets AS p\n    ON v.PetId = p.PetId\nWHERE\n    v.NextDueDate >= CAST(GETDATE() AS DATE)\n    AND v.NextDueDate < DATEADD(DAY, 8, CAST(GETDATE() AS DATE))\nORDER BY v.NextDueDate ASC;\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.microsoftSqlTool",
+      "typeVersion": 1.2,
+      "position": [
+        480,
+        144
+      ],
+      "id": "70f75dcd-f13d-4a93-a864-9052138216b5",
+      "name": "Microsoft SQL",
+      "credentials": {
+        "microsoftSql": {
+          "id": "1g1thFIKBSu6NIzH",
+          "name": "Microsoft SQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "discord-ai-chat",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.2,
+      "position": [
+        -64,
+        -80
+      ],
+      "id": "cbb264b4-48b1-447c-87ff-4d2c4d6c849e",
+      "name": "Webhook",
+      "webhookId": "65caf084-66b1-40a4-8ba3-588edd505477",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "BV0TwsqToRrI7AFO",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"output\": $json.output } }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        592,
+        16
+      ],
+      "id": "4f357586-2a0a-4a0e-a4e5-3aed366253c2",
+      "name": "Respond to Webhook"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Microsoft SQL": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "8447373e-074e-4e19-8b6b-f2ea121c640f",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "283beca1d93815121c19a5ce147f98bbffcdcd4ec411d1682f39614eef19c95f"
+  },
+  "nodeGroups": [],
+  "id": "xsvoIkhsWO0Djzl6",
+  "tags": []
+}
