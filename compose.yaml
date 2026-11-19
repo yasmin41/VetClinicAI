@@ -1,3 +1,4 @@
+
 name: vetclinicai
 
 services:
@@ -14,9 +15,27 @@ services:
       N8N_HOST: localhost
       N8N_PORT: 5678
       N8N_PROTOCOL: http
+      WEBHOOK_URL: http://localhost:5679/
+      N8N_EDITOR_BASE_URL: http://localhost:5679/
 
     volumes:
       - n8n_data:/home/node/.n8n
+
+  discord-bot:
+    build:
+      context: ./discord-bot
+      dockerfile: Dockerfile
+
+    restart: unless-stopped
+
+    environment:
+      DISCORD_BOT_TOKEN: ${DISCORD_BOT_TOKEN:?Discord bot token is required}
+      DISCORD_CHANNEL_ID: ${DISCORD_CHANNEL_ID:?Discord channel ID is required}
+      N8N_WEBHOOK_API_KEY: ${N8N_WEBHOOK_API_KEY:?Webhook API key is required}
+      N8N_WEBHOOK_URL: http://n8n:5678/webhook/discord-ai-chat
+
+    depends_on:
+      - n8n
 
 volumes:
   n8n_data:

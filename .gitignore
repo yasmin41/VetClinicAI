@@ -9,7 +9,10 @@
 
 # Python
 __pycache__/
-*.pyc
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
 
 # Local database files and backups
 *.mdf
@@ -21,3 +24,12 @@ __pycache__/
 
 # Temporary test scripts
 *-test.sql
+
+# Local database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Operating system
+.DS_Store
+Thumbs.db
