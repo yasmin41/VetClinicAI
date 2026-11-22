@@ -25,7 +25,13 @@
         48
       ],
       "id": "5ed51805-d678-485a-be27-48e65db30efa",
-      "name": "Microsoft SQL"
+      "name": "Microsoft SQL",
+      "credentials": {
+        "microsoftSql": {
+          "id": "1g1thFIKBSu6NIzH",
+          "name": "Microsoft SQL account"
+        }
+      }
     },
     {
       "parameters": {
@@ -100,7 +106,7 @@
             {
               "id": "d45ad1b4-ada4-4c87-affa-5bfd53018616",
               "name": "reminderMessage",
-              "value": "={{ `Hello ${$json.CustomerName}, this is a reminder from VetClinicAI. ${$json.PetName} has an upcoming ${$json.VaccineName} vaccination in ${$json.DaysUntilDue} day(s). Please contact the clinic to confirm the appointment.` }}",
+              "value": "={{ `Hello ${$json.CustomerName}, this is a reminder from VetClinicAI. ${$json.PetName} has an upcoming (${$json.VaccineName}) vaccination in ${$json.DaysUntilDue} day(s). Please contact the clinic to confirm the appointment.` }}",
               "type": "string"
             },
             {
@@ -139,10 +145,17 @@
       "typeVersion": 2,
       "position": [
         1296,
-        -192
+        -176
       ],
       "id": "989dd3e2-092a-4d46-b4eb-881d3e7d2c90",
-      "name": "Discord"
+      "name": "Discord",
+      "webhookId": "1dbb9593-4e89-4ff9-abca-efa96a1712cb",
+      "credentials": {
+        "discordWebhookApi": {
+          "id": "fp6nsd8JHQgSEv32",
+          "name": "Discord Webhook account"
+        }
+      }
     },
     {
       "parameters": {
@@ -168,17 +181,23 @@
         "operation": "executeQuery",
         "query": "SELECT\n    CASE\n        WHEN EXISTS (\n            SELECT 1\n            FROM dbo.VaccinationReminderLog\n            WHERE VaccinationId = $1\n              AND DueDate = CAST($2 AS DATE)\n              AND Channel = N'Discord'\n        )\n        THEN 1\n        ELSE 0\n    END AS AlreadySent;\n",
         "options": {
-          "queryReplacement": "=\t{{ $json.VaccinationId }},{{ $json.NextDueDate }}"
+          "queryReplacement": "={{ $json.VaccinationId }},{{ $json.NextDueDate }}"
         }
       },
       "type": "n8n-nodes-base.microsoftSql",
       "typeVersion": 1.2,
       "position": [
-        800,
-        -64
+        816,
+        -160
       ],
       "id": "6e24f584-7c87-45c7-b866-46b81ab20d7f",
-      "name": "Check Reminder History"
+      "name": "Check Reminder History",
+      "credentials": {
+        "microsoftSql": {
+          "id": "1g1thFIKBSu6NIzH",
+          "name": "Microsoft SQL account"
+        }
+      }
     },
     {
       "parameters": {
@@ -215,24 +234,47 @@
     },
     {
       "parameters": {
+        "operation": "executeQuery",
+        "query": "IF $3 = 1\nBEGIN\n    IF NOT EXISTS (\n        SELECT 1\n        FROM dbo.VaccinationReminderLog\n        WHERE VaccinationId = $1\n          AND DueDate = CAST($2 AS DATE)\n          AND Channel = N'Discord'\n    )\n    BEGIN\n        INSERT INTO dbo.VaccinationReminderLog\n            (VaccinationId, DueDate, Channel)\n        VALUES\n            ($1, CAST($2 AS DATE), N'Discord');\n\n        SELECT N'Logged' AS LogStatus;\n    END\n    ELSE\n    BEGIN\n        SELECT N'Already logged' AS LogStatus;\n    END\nEND\nELSE\nBEGIN\n    SELECT N'Discord send failed' AS LogStatus;\nEND;\n",
+        "options": {
+          "queryReplacement": "={{ $('Restore Reminder Data').item.json.VaccinationId }},{{ $('Restore Reminder Data').item.json.NextDueDate }},{{ $json.success ? 1 : 0 }}\n"
+        }
+      },
+      "type": "n8n-nodes-base.microsoftSql",
+      "typeVersion": 1.2,
+      "position": [
+        1456,
+        -16
+      ],
+      "id": "1fc6c549-0640-4cad-bbd9-c9cb8339df2b",
+      "name": "Log Sent Reminder",
+      "credentials": {
+        "microsoftSql": {
+          "id": "1g1thFIKBSu6NIzH",
+          "name": "Microsoft SQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
         "assignments": {
           "assignments": [
             {
-              "id": "86a2d6de-1f7c-40ea-8838-e19fd4b1b49c",
-              "name": "reminderMessage",
-              "value": "={{ $('Prepare Vaccination Reminder').item.json.reminderMessage }}",
-              "type": "string"
-            },
-            {
-              "id": "334e26fb-20fb-44c7-9c4d-495b381f966b",
+              "id": "58afb826-e9ee-4f16-8de9-0956aea06bd7",
               "name": "VaccinationId",
               "value": "={{ $('Prepare Vaccination Reminder').item.json.VaccinationId }}",
               "type": "number"
             },
             {
-              "id": "5e4242d3-46db-4e23-85b9-ff3b782c0509",
+              "id": "b9a68a01-e4fb-4d4f-8f76-c1141acd6ffe",
               "name": "NextDueDate",
               "value": "={{ $('Prepare Vaccination Reminder').item.json.NextDueDate }}",
+              "type": "string"
+            },
+            {
+              "id": "10a8a7f1-5f7d-4285-9618-a257727a6117",
+              "name": "reminderMessage",
+              "value": "={{ $('Prepare Vaccination Reminder').item.json.reminderMessage }}",
               "type": "string"
             }
           ]
@@ -242,28 +284,11 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.5,
       "position": [
-        1120,
-        -192
+        1168,
+        96
       ],
-      "id": "1f6c1223-372f-415f-ba5f-66e648c7f558",
+      "id": "12a97446-5af4-4399-9279-b4a891d7613d",
       "name": "Restore Reminder Data"
-    },
-    {
-      "parameters": {
-        "operation": "executeQuery",
-        "query": "\nIF $3 = 1\nBEGIN\n    IF NOT EXISTS (\n        SELECT 1\n        FROM dbo.VaccinationReminderLog\n        WHERE VaccinationId = $1\n          AND DueDate = CAST($2 AS DATE)\n          AND Channel = N'Discord'\n    )\n    BEGIN\n        INSERT INTO dbo.VaccinationReminderLog\n            (VaccinationId, DueDate, Channel)\n        VALUES\n            ($1, CAST($2 AS DATE), N'Discord');\n\n        SELECT N'Logged' AS LogStatus;\n    END\n    ELSE\n    BEGIN\n        SELECT N'Already logged' AS LogStatus;\n    END\nEND\nELSE\nBEGIN\n    SELECT N'Discord send failed' AS LogStatus;\nEND;\n",
-        "options": {
-          "queryReplacement": "={{ $('Restore Reminder Data').item.json.VaccinationId }},{{ $('Restore Reminder Data').item.json.NextDueDate }},{{ $json.success ? 1 : 0 }}"
-        }
-      },
-      "type": "n8n-nodes-base.microsoftSql",
-      "typeVersion": 1.2,
-      "position": [
-        1344,
-        -16
-      ],
-      "id": "1fc6c549-0640-4cad-bbd9-c9cb8339df2b",
-      "name": "Log Sent Reminder"
     }
   ],
   "pinData": {},
@@ -373,6 +398,12 @@
     "executionOrder": "v1",
     "binaryMode": "separate"
   },
+  "versionId": "a0f1ee4f-0900-4317-9a5a-fd06aa344889",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "283beca1d93815121c19a5ce147f98bbffcdcd4ec411d1682f39614eef19c95f"
+  },
   "nodeGroups": [],
+  "id": "jeoQ0dgPMRh33Woi",
   "tags": []
 }
